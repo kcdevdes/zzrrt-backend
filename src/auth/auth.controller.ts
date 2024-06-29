@@ -1,7 +1,14 @@
-import { Controller, Get, UseGuards, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Req,
+  UnauthorizedException,
+  Post,
+  Headers,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
 
 @Controller('login')
 export class AuthController {
@@ -14,14 +21,34 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res: Response) {
-    const user = req.user;
-
-    // checks if the user already exists in the database
-    let existingUser = await this.authService.validateUser(user.email);
-    if (!existingUser) {
-      // if not, creates a new user
-      existingUser = await this.authService.createUser(user);
+  async googleAuthRedirect(@Req() req) {
+    if (!req.user) {
+      throw new UnauthorizedException('No User Found in Request');
     }
+
+    return await this.authService.login(req.user);
+  }
+
+  @Get('status')
+  async getLoginResult(@Headers('authorization') rawToken: string) {}
+
+  @Post('token/access')
+  async postTokenAccess(@Headers('authorization') rawToken: string) {
+    const token = this.authService.extractTokenFromHeader(rawToken, true);
+    const newToken = this.authService.rotateToken(token, false);
+
+    return {
+      accessToken: newToken,
+    };
+  }
+
+  @Post('token/refresh')
+  async postTokenRefresh(@Headers() rawToken: string) {
+    const token = this.authService.extractTokenFromHeader(rawToken, true);
+    const newToken = this.authService.rotateToken(token, true);
+
+    return {
+      refreshToken: newToken,
+    };
   }
 }

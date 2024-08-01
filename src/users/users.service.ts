@@ -1,7 +1,16 @@
+
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { OAuthProvider, Role, Users } from './entity/users.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
+import { FindUserDto } from './dto/find-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -15,17 +24,9 @@ export class UsersService {
    */
   constructor(@InjectModel('Users') private usersModel: Model<Users>) {}
 
-  async createUser(
-    username: string,
-    email: string,
-    oauthProvider: OAuthProvider,
-    password?: string,
-  ) {
+  async createUser(dto: CreateUserDto) {
     const newUser = new this.usersModel({
-      username,
-      email,
-      oauthProvider,
-      password,
+      ...dto,
       role: Role.user,
     });
 
@@ -33,32 +34,51 @@ export class UsersService {
   }
 
   async findUserByEmail(email: string) {
-    return await this.usersModel.findOne({ email });
+    return this.userModel.findOne({ email });
   }
 
-  async findUserById(id: string) {
-    return await this.usersModel.findById(id);
+  async findUserById(id: number) {
+    return this.userModel.findById(id);
   }
 
-  async updateUser(id: string, user: Partial<Users>) {
-    return await this.usersModel.findByIdAndUpdate(id, user, { new: true });
+  async updateUser(id: number, user: Partial<User>) {
+    return this.userModel.findByIdAndUpdate(id, user, { new: true });
   }
 
-  async deleteUser(id: string) {
-    return await this.usersModel.findByIdAndDelete(id);
+  async deleteUser(id: number) {
+    return this.userModel.findByIdAndDelete(id);
   }
 
-  async findOrCreateUser(
-    email: string,
-    oauthProvider: OAuthProvider,
-    username?: string,
-  ) {
-    const user = await this.findUserByEmail(email);
+  async findOrCreateUser(dto: FindUserDto) {
+    const user = await this.findUserByEmail(dto.email);
 
     if (user) {
       return user;
     }
 
-    return await this.createUser(username, email, oauthProvider);
+    const userDto = new CreateUserDto();
+    userDto.email = dto.email;
+    userDto.username = dto.username;
+    userDto.oauthProvider = dto.oauthProvider;
+
+    return await this.createUser(userDto);
+  }
+
+  authorizeRequest(req, id: string | number) {
+    if (!req) {
+      throw new InternalServerErrorException('Request not found');
+    }
+
+    if (!req.user) {
+      throw new BadRequestException('User not found in request');
+    }
+
+    if (req.user.id !== id) {
+      throw new UnauthorizedException(
+        'User not authorized to access this resource',
+      );
+    }
+
+    return true;
   }
 }

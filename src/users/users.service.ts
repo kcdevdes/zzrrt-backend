@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OAuthProvider, Role, User } from './entity/users.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -15,17 +16,10 @@ export class UsersService {
    */
   constructor(@InjectModel('User') private userModel: Model<User>) {}
 
-  async createUser(
-    username: string,
-    email: string,
-    oauthProvider: OAuthProvider,
-    password?: string,
+  async createUser(dto: CreateUserDto
   ) {
     const newUser = new this.userModel({
-      username,
-      email,
-      oauthProvider,
-      password,
+      ...dto,
       role: Role.user,
     });
 
@@ -33,19 +27,19 @@ export class UsersService {
   }
 
   async findUserByEmail(email: string) {
-    return await this.userModel.findOne({ email });
+    return this.userModel.findOne({ email });
   }
 
   async findUserById(id: string) {
-    return await this.userModel.findById(id);
+    return this.userModel.findById(id);
   }
 
   async updateUser(id: string, user: Partial<User>) {
-    return await this.userModel.findByIdAndUpdate(id, user, { new: true });
+    return this.userModel.findByIdAndUpdate(id, user, { new: true });
   }
 
   async deleteUser(id: string) {
-    return await this.userModel.findByIdAndDelete(id);
+    return this.userModel.findByIdAndDelete(id);
   }
 
   async findOrCreateUser(

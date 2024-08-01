@@ -55,21 +55,21 @@ export class AuthService {
   }
 
   extractTokenFromHeader(header: string, isBearer: boolean) {
-    const splitToken = header.split(' ');
+    const splitTokens = header.split(' ');
 
     // check if the token is in the correct format
     // if isBearer is true, the token should start with 'Bearer'
     // otherwise, it should start with 'Basic'
     if (
-      splitToken.length !== 2 ||
-      splitToken[0] !== (isBearer ? 'Bearer' : 'Basic')
+      splitTokens.length !== 2 ||
+      splitTokens[0] !== (isBearer ? 'Bearer' : 'Basic')
     ) {
       throw new BadRequestException(
         'Token type must be either `Bearer` or `Basic`',
       );
     }
 
-    return splitToken[1];
+    return splitTokens[1];
   }
 
   decodeBasicToken(token: string) {
@@ -105,7 +105,7 @@ export class AuthService {
       secret: this.configService.get('JWT_SECRET'),
     });
 
-    if (!decoded.email || !decoded.id || !decoded.type) {
+    if (!decoded.email || !decoded.sub || !decoded.type) {
       throw new BadRequestException('Invalid Token');
     }
 

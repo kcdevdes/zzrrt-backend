@@ -1,7 +1,8 @@
-import { OAuthProvider } from '../entity/users.entity';
+import { User } from '../entity/users.entity';
+import { PickType } from '@nestjs/mapped-types';
 
-export class FindUserDto {
-  email: string;
-  oauthProvider: OAuthProvider;
-  username?: string;
-}
+export class FindUserDto extends PickType(User, [
+  'email',
+  'oauthProvider',
+  'username',
+]) {}

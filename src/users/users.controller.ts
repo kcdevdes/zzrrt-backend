@@ -1,10 +1,12 @@
 import {
   BadRequestException,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   Param,
   ParseIntPipe,
+  Patch,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -19,20 +21,32 @@ export class UsersController {
   @Get(':id')
   @UseGuards(AccessTokenGuard)
   async getUsers(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    if (!req) {
-      throw new InternalServerErrorException('Request not found');
-    }
-
-    if (!req.user) {
-      throw new BadRequestException('User not found in request');
-    }
-
-    if (req.user.id !== id) {
-      throw new UnauthorizedException(
-        'User not authorized to access this resource',
-      );
-    }
+    this.usersService.authorizeRequest(req, id);
 
     return this.usersService.findUserById(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(AccessTokenGuard)
+  async updateUser(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    this.usersService.authorizeRequest(req, id);
+
+    try {
+      return this.usersService.updateUser(id, req.body);
+    } catch (error) {
+      throw new InternalServerErrorException('Error deleting user');
+    }
+  }
+
+  @Delete(':id')
+  @UseGuards(AccessTokenGuard)
+  async deleteUser(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    this.usersService.authorizeRequest(req, id);
+
+    try {
+      return this.usersService.deleteUser(id);
+    } catch (error) {
+      throw new InternalServerErrorException('Error deleting user');
+    }
   }
 }

@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { OAuthProvider, Role, User } from './entity/users.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -34,11 +39,11 @@ export class UsersService {
     return this.userModel.findById(id);
   }
 
-  async updateUser(id: string, user: Partial<User>) {
+  async updateUser(id: number, user: Partial<User>) {
     return this.userModel.findByIdAndUpdate(id, user, { new: true });
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: number) {
     return this.userModel.findByIdAndDelete(id);
   }
 
@@ -49,11 +54,29 @@ export class UsersService {
       return user;
     }
 
-    const userDto: CreateUserDto = {
-      email: dto.email,
-      username: dto.username,
-      oauthProvider: dto.oauthProvider,
-    };
+    const userDto = new CreateUserDto();
+    userDto.email = dto.email;
+    userDto.username = dto.username;
+    userDto.oauthProvider = dto.oauthProvider;
+
     return await this.createUser(userDto);
+  }
+
+  authorizeRequest(req, id: string | number) {
+    if (!req) {
+      throw new InternalServerErrorException('Request not found');
+    }
+
+    if (!req.user) {
+      throw new BadRequestException('User not found in request');
+    }
+
+    if (req.user.id !== id) {
+      throw new UnauthorizedException(
+        'User not authorized to access this resource',
+      );
+    }
+
+    return true;
   }
 }

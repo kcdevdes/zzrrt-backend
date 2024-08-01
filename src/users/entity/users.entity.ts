@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IsEmail, IsEnum, IsObject, IsString } from 'class-validator';
 
 @Schema()
 export class OAuthProvider {
+  @IsString()
   @Prop({ required: true })
   provider: string;
 
+  @IsString()
   @Prop({ required: true })
   providerUserId: string;
 }
@@ -17,15 +20,19 @@ export enum Role {
 
 @Schema({ timestamps: true })
 export class User {
+  @IsString()
   @Prop({ required: true })
   username: string;
 
+  @IsString()
   @Prop()
   password: string;
 
+  @IsEmail()
   @Prop({ required: true })
   email: string;
 
+  @IsEnum(Role)
   @Prop({ type: String, enum: Role, default: Role.user })
   role: Role;
 

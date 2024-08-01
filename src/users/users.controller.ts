@@ -11,7 +11,6 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
 import { AccessTokenGuard } from '../auth/guards/bearer-token.guard';
 
 @Controller('users')

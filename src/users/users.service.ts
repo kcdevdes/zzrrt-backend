@@ -1,10 +1,12 @@
+
 import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { OAuthProvider, Role, User } from './entity/users.entity';
+import { Injectable } from '@nestjs/common';
+import { OAuthProvider, Role, Users } from './entity/users.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,10 +22,10 @@ export class UsersService {
    * 5. deleteUser
    * 6. findOrCreateUser
    */
-  constructor(@InjectModel('User') private userModel: Model<User>) {}
+  constructor(@InjectModel('Users') private usersModel: Model<Users>) {}
 
   async createUser(dto: CreateUserDto) {
-    const newUser = new this.userModel({
+    const newUser = new this.usersModel({
       ...dto,
       role: Role.user,
     });

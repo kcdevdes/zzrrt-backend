@@ -26,6 +26,9 @@ export class User {
 
   @IsString()
   @Prop()
+  @Exclude({
+    toPlainOnly: true,
+  })
   password: string;
 
   @IsEmail()
@@ -34,10 +37,13 @@ export class User {
 
   @IsEnum(Role)
   @Prop({ type: String, enum: Role, default: Role.user })
+  @Exclude({
+    toPlainOnly: true,
+  })
   role: Role;
 
   @Prop({ type: OAuthProvider })
   oauthProvider: OAuthProvider;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const UsersSchema = SchemaFactory.createForClass(Users);

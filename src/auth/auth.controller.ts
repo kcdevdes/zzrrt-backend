@@ -5,10 +5,15 @@ import {
   Req,
   UnauthorizedException,
   Post,
-  Headers,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
+import {
+  AccessTokenGuard,
+  RefreshTokenGuard,
+} from './guards/bearer-token.guard';
+import { Users } from 'src/users/entity/users.entity';
+import { User } from 'src/users/decorator/user.decorator';
 
 @Controller('login')
 export class AuthController {
@@ -30,12 +35,18 @@ export class AuthController {
   }
 
   @Get('status')
-  async getLoginResult(@Headers('authorization') rawToken: string) {}
+  @UseGuards(AccessTokenGuard)
+  async getLoginResult(@User() user: Users) {
+    return {
+      user: user.username,
+      email: user.email,
+    };
+  }
 
   @Post('token/access')
-  async postTokenAccess(@Headers('authorization') rawToken: string) {
-    const token = this.authService.extractTokenFromHeader(rawToken, true);
-    const newToken = this.authService.rotateToken(token, false);
+  @UseGuards(RefreshTokenGuard)
+  async postTokenAccess(@Req() req) {
+    const newToken = this.authService.rotateToken(req['token'], false);
 
     return {
       accessToken: newToken,
@@ -43,9 +54,9 @@ export class AuthController {
   }
 
   @Post('token/refresh')
-  async postTokenRefresh(@Headers() rawToken: string) {
-    const token = this.authService.extractTokenFromHeader(rawToken, true);
-    const newToken = this.authService.rotateToken(token, true);
+  @UseGuards(RefreshTokenGuard)
+  async postTokenRefresh(@Req() req) {
+    const newToken = this.authService.rotateToken(req['token'], true);
 
     return {
       refreshToken: newToken,

@@ -21,25 +21,27 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async googleAuth(@Req() req) {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req) {
-    if (!req.user) {
-      throw new UnauthorizedException('No User Found in Request');
-    }
-
     return await this.authService.login(req.user);
   }
 
   @Get('status')
   @UseGuards(AccessTokenGuard)
-  async getLoginResult(@User() user: Users) {
+  async getLoginResult(@Req() req) {
+    if (!req.user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const user = req.user as Users;
+
     return {
-      user: user.username,
+      _id: user._id,
       email: user.email,
+      username: user.username,
     };
   }
 

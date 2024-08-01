@@ -1,4 +1,4 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -15,10 +15,10 @@ import { UsersModule } from './users/users.module';
   ],
   controllers: [],
   providers: [
-    {
-      provide: 'APP_INTERCEPTOR',
-      useClass: ClassSerializerInterceptor,
-    },
+    // {
+    //   provide: 'APP_INTERCEPTOR',
+    //   useClass: ClassSerializerInterceptor,
+    // },
   ],
 })
 export class AppModule {}

@@ -1,18 +1,16 @@
 import {
-  BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
   Param,
-  ParseIntPipe,
   Patch,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AccessTokenGuard } from '../auth/guards/bearer-token.guard';
 import { UsersService } from './users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -20,33 +18,26 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(AccessTokenGuard)
-  async getUsers(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    this.usersService.authorizeRequest(req, id);
-
-    return this.usersService.findUserById(id);
+  async getUsers(@Param('id') _id: string, @Req() req) {
+    this.usersService.authorizeRequest(req, _id);
+    return this.usersService.findUserById(_id);
   }
 
   @Patch(':id')
   @UseGuards(AccessTokenGuard)
-  async updateUser(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    this.usersService.authorizeRequest(req, id);
-
-    try {
-      return this.usersService.updateUser(id, req.body);
-    } catch (error) {
-      throw new InternalServerErrorException('Error deleting user');
-    }
+  async updateUser(
+    @Param('id') _id: string,
+    @Req() req,
+    @Body() dto: UpdateUserDto,
+  ) {
+    this.usersService.authorizeRequest(req, _id);
+    return this.usersService.updateUser(_id, dto);
   }
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)
-  async deleteUser(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    this.usersService.authorizeRequest(req, id);
-
-    try {
-      return this.usersService.deleteUser(id);
-    } catch (error) {
-      throw new InternalServerErrorException('Error deleting user');
-    }
+  async deleteUser(@Param('id') _id: string, @Req() req) {
+    this.usersService.authorizeRequest(req, _id);
+    return this.usersService.deleteUser(_id);
   }
 }

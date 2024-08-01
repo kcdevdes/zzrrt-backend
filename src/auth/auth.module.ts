@@ -23,6 +23,6 @@ import {
     AccessTokenGuard,
     RefreshTokenGuard,
   ],
-  exports: [BearerTokenGuard, AccessTokenGuard, RefreshTokenGuard, AuthService],
+  exports: [RefreshTokenGuard, AuthService],
 })
 export class AuthModule {}

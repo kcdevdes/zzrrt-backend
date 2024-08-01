@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { OAuthProvider } from 'src/users/entity/users.entity';
+import { OAuthProvider, Users } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 
@@ -29,24 +29,27 @@ export class AuthService {
 
     const creatUserDto = new CreateUserDto();
     creatUserDto.email = user.email;
-    creatUserDto.username = user.username;
+    // if there is no lastname, make an empty string after firstname
+    creatUserDto.username =
+      user.firstName + (user.lastName ? user.lastName : '');
     creatUserDto.oauthProvider = provider;
 
-    const newUser = await this.usersService.findOrCreateUser(creatUserDto);
+    const newUser: Users =
+      await this.usersService.findOrCreateUser(creatUserDto);
 
     return {
-      access_token: this.signToken(newUser.email, newUser.id, false),
-      refresh_token: this.signToken(newUser.email, newUser.id, true),
+      access_token: this.signToken(newUser.email, newUser._id, false),
+      refresh_token: this.signToken(newUser.email, newUser._id, true),
     };
   }
 
-  signToken(email: string, id: string, isRefreshToken: boolean) {
+  signToken(email: string, _id: string, isRefreshToken: boolean) {
     /**
      * email, sub, type을 무조건 포함.
      */
     const payload = {
-      email: email,
-      sub: id,
+      sub: _id,
+      email,
       type: isRefreshToken ? 'refresh' : 'access',
     };
 

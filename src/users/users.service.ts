@@ -3,6 +3,7 @@ import { OAuthProvider, Role, User } from './entity/users.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FindUserDto } from './dto/find-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,8 +17,7 @@ export class UsersService {
    */
   constructor(@InjectModel('User') private userModel: Model<User>) {}
 
-  async createUser(dto: CreateUserDto
-  ) {
+  async createUser(dto: CreateUserDto) {
     const newUser = new this.userModel({
       ...dto,
       role: Role.user,
@@ -30,7 +30,7 @@ export class UsersService {
     return this.userModel.findOne({ email });
   }
 
-  async findUserById(id: string) {
+  async findUserById(id: number) {
     return this.userModel.findById(id);
   }
 
@@ -42,17 +42,18 @@ export class UsersService {
     return this.userModel.findByIdAndDelete(id);
   }
 
-  async findOrCreateUser(
-    email: string,
-    oauthProvider: OAuthProvider,
-    username?: string,
-  ) {
-    const user = await this.findUserByEmail(email);
+  async findOrCreateUser(dto: FindUserDto) {
+    const user = await this.findUserByEmail(dto.email);
 
     if (user) {
       return user;
     }
 
-    return await this.createUser(username, email, oauthProvider);
+    const userDto: CreateUserDto = {
+      email: dto.email,
+      username: dto.username,
+      oauthProvider: dto.oauthProvider,
+    };
+    return await this.createUser(userDto);
   }
 }

@@ -1,8 +1,8 @@
-import { User } from '../entity/users.entity';
+import { Users } from '../entity/users.entity';
 import { PickType } from '@nestjs/mapped-types';
 import { IsOptional, IsString } from 'class-validator';
 
-export class CreateUserDto extends PickType(User, [
+export class CreateUserDto extends PickType(Users, [
   'email',
   'oauthProvider',
   'username',

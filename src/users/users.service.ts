@@ -1,7 +1,5 @@
-
 import {
   BadRequestException,
-  Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -34,19 +32,19 @@ export class UsersService {
   }
 
   async findUserByEmail(email: string) {
-    return this.userModel.findOne({ email });
+    return this.usersModel.findOne({ email });
   }
 
   async findUserById(id: number) {
-    return this.userModel.findById(id);
+    return this.usersModel.findById(id);
   }
 
-  async updateUser(id: number, user: Partial<User>) {
-    return this.userModel.findByIdAndUpdate(id, user, { new: true });
+  async updateUser(id: number, user: Partial<Users>) {
+    return this.usersModel.findByIdAndUpdate(id, user, { new: true });
   }
 
   async deleteUser(id: number) {
-    return this.userModel.findByIdAndDelete(id);
+    return this.usersModel.findByIdAndDelete(id);
   }
 
   async findOrCreateUser(dto: FindUserDto) {

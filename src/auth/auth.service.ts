@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OAuthProvider } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,11 +27,12 @@ export class AuthService {
     provider.provider = user.provider;
     provider.providerUserId = user.providerId;
 
-    const newUser = await this.usersService.findOrCreateUser(
-      user.email,
-      provider,
-      `${user.firstName ? user.firstName : ''}${user.lastName ? user.lastName : ''}`,
-    );
+    const creatUserDto = new CreateUserDto();
+    creatUserDto.email = user.email;
+    creatUserDto.username = user.username;
+    creatUserDto.oauthProvider = provider;
+
+    const newUser = await this.usersService.findOrCreateUser(creatUserDto);
 
     return {
       access_token: this.signToken(newUser.email, newUser.id, false),

@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AccessTokenGuard } from '../auth/guards/bearer-token.guard';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {

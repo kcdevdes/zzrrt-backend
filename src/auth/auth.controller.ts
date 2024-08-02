@@ -12,7 +12,7 @@ import {
   AccessTokenGuard,
   RefreshTokenGuard,
 } from './guards/bearer-token.guard';
-import { Users } from 'src/users/entity/users.entity';
+import { UserDocument } from 'src/users/entity/users.entity';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -66,7 +66,7 @@ export class AuthController {
       throw new UnauthorizedException('User not found');
     }
 
-    return req.user as Users;
+    return req.user as UserDocument;
   }
 
   @Post('token/access')

@@ -1,17 +1,20 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { OAuthProvider, Users } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { OAuthProvider, UserDocument } from '../users/entity/users.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -34,7 +37,7 @@ export class AuthService {
       user.firstName + (user.lastName ? user.lastName : '');
     creatUserDto.oauthProvider = provider;
 
-    const newUser: Users =
+    const newUser: UserDocument =
       await this.usersService.findOrCreateUser(creatUserDto);
 
     return {
@@ -55,7 +58,7 @@ export class AuthService {
 
     return this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_SECRET'),
-      expiresIn: isRefreshToken ? 3600 : 300,
+      expiresIn: isRefreshToken ? 3600 : 1800,
     });
   }
 

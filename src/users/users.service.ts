@@ -11,14 +11,6 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
-  /**
-   * 1. createUser
-   * 2. findUserByEmail
-   * 3. findUserById
-   * 4. updateUser
-   * 5. deleteUser
-   * 6. findOrCreateUser
-   */
   constructor(@InjectModel('Users') private usersModel: Model<Users>) {}
 
   async createUser(dto: CreateUserDto) {

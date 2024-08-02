@@ -4,27 +4,30 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role, Users } from './entity/users.entity';
-import { InjectModel } from '@nestjs/mongoose';
+import { Role, UserDocument } from './entity/users.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('Users') private usersModel: Model<Users>) {}
+  constructor(
+    @InjectRepository(UserDocument)
+    private readonly userRepository: Repository<UserDocument>,
+  ) {}
 
   async createUser(dto: CreateUserDto) {
-    const newUser = new this.usersModel({
+    const newUser = this.userRepository.create({
       ...dto,
       role: Role.user,
     });
 
-    return await newUser.save();
+    return await this.userRepository.save(newUser);
   }
 
   async findUserById(_id: string) {
     try {
-      return await this.usersModel.findById(_id);
+      return await this.userRepository.findOneBy({ _id });
     } catch (err) {
       throw new InternalServerErrorException('Error finding user by id');
     }
@@ -32,19 +35,19 @@ export class UsersService {
 
   async findUserByEmail(email: string) {
     try {
-      return await this.usersModel.findOne({ email });
+      return await this.userRepository.findOneBy({ email });
     } catch (err) {
       throw new InternalServerErrorException('Error finding user by email');
     }
   }
 
-  async updateUser(_id: string, user: Partial<Users>) {
+  async updateUser(_id: string, user: Partial<UserDocument>) {
     const existingUser = await this.findUserById(_id);
     if (!existingUser) {
       throw new BadRequestException('User not found');
     }
     try {
-      await this.usersModel.updateOne({ _id }, user);
+      await this.userRepository.update({ _id }, user);
       return {
         response: 'User updated successfully',
         user: await this.findUserById(_id),
@@ -60,7 +63,7 @@ export class UsersService {
       throw new BadRequestException('User not found');
     }
     try {
-      await this.usersModel.deleteOne({ _id });
+      await this.userRepository.delete({ _id });
       return {
         response: 'User deleted successfully',
         user: existingUser,
@@ -70,7 +73,7 @@ export class UsersService {
     }
   }
 
-  async findOrCreateUser(dto: CreateUserDto): Promise<Users> {
+  async findOrCreateUser(dto: CreateUserDto): Promise<UserDocument> {
     // Finds user by userId
     const user = await this.findUserByEmail(dto.email);
 

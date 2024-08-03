@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth2';
 import { ConfigService } from '@nestjs/config';
@@ -20,18 +20,23 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
-    const { id, name, emails, photos } = profile;
+    try {
+      const { id, name, emails, photos } = profile;
 
-    const user = {
-      provider: 'google',
-      providerId: id,
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      picture: photos[0].value,
-      accessToken,
-    };
+      const user = {
+        provider: 'google',
+        providerId: id,
+        email: emails[0].value,
+        firstName: name.givenName,
+        lastName: name.familyName,
+        picture: photos[0].value,
+        accessToken,
+        refreshToken,
+      };
 
-    done(null, user);
+      done(null, user);
+    } catch (err) {
+      throw new InternalServerErrorException('Google Oauth Failure');
+    }
   }
 }

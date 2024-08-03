@@ -24,6 +24,16 @@ export class OAuthProvider {
   @IsString()
   @Column()
   providerUserId: string;
+
+  @IsString()
+  @IsOptional()
+  @Column()
+  providerAccessToken: string;
+
+  @IsString()
+  @IsOptional()
+  @Column()
+  providerRefreshToken: string;
 }
 
 @Entity('users', {})
@@ -44,6 +54,8 @@ export class UserDocument {
   @Column()
   email: string;
 
+  @IsString()
+  @Column()
   @Column({
     enum: Role,
     default: Role.user,

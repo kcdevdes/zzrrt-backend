@@ -91,6 +91,11 @@ export class UsersService {
     return await this.createUser(userDto);
   }
 
+  /**
+   * Returns if a user holds a valid token and _id both in order to access to the user's resource
+   * @param req Request Object with `user` and `token` properties attached by AccessTokenGuard
+   * @param _id The ID to which a user wants to access
+   */
   authorizeRequest(req, _id: string) {
     if (!req) {
       throw new InternalServerErrorException('Request not found');

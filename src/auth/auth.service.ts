@@ -29,6 +29,7 @@ export class AuthService {
     const provider = new OAuthProvider();
     provider.provider = user.provider;
     provider.providerUserId = user.providerId;
+    provider.providerAccessToken = user.accessToken;
 
     const creatUserDto = new CreateUserDto();
     creatUserDto.email = user.email;

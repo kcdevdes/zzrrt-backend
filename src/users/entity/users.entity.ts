@@ -6,9 +6,11 @@ import {
   CreateDateColumn,
   Entity,
   ObjectIdColumn,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { MatchDocument } from '../../matches/entity/matches.entity';
 
 export enum Role {
   admin = 'ADMIN',
@@ -34,9 +36,12 @@ export class OAuthProvider {
   @IsOptional()
   @Column()
   providerRefreshToken: string;
+
+  @OneToMany(() => MatchDocument, (match) => match.creator)
+  matches: MatchDocument[];
 }
 
-@Entity('users', {})
+@Entity('users')
 export class UserDocument {
   @ObjectIdColumn()
   _id: string;
@@ -48,6 +53,7 @@ export class UserDocument {
   @IsString()
   @IsOptional()
   @Column()
+  @Exclude()
   password: string;
 
   @IsEmail()
@@ -76,4 +82,7 @@ export class UserDocument {
   generateId() {
     this._id = uuidv4();
   }
+
+  @OneToMany(() => MatchDocument, (match) => match.creator)
+  matches: MatchDocument[];
 }

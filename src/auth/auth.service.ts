@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { OAuthProvider, UserDocument } from '../users/entity/users.entity';
+import { OAuthProvider, UserModel } from '../users/entity/users.entity';
 
 @Injectable()
 export class AuthService {
@@ -38,12 +38,12 @@ export class AuthService {
       user.firstName + (user.lastName ? user.lastName : '');
     creatUserDto.oauthProvider = provider;
 
-    const newUser: UserDocument =
+    const newUser: UserModel =
       await this.usersService.findOrCreateUser(creatUserDto);
 
     return {
-      access_token: this.signToken(newUser.email, newUser._id, false),
-      refresh_token: this.signToken(newUser.email, newUser._id, true),
+      access_token: this.signToken(newUser.email, newUser.id, false),
+      refresh_token: this.signToken(newUser.email, newUser.id, true),
     };
   }
 
@@ -59,7 +59,7 @@ export class AuthService {
 
     return this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_SECRET'),
-      expiresIn: isRefreshToken ? 3600 : 1800,
+      expiresIn: isRefreshToken ? 3600 : 3600,
     });
   }
 
@@ -99,7 +99,7 @@ export class AuthService {
 
   verifyToken(token: string) {
     return this.jwtService.verify(token, {
-      secret: this.configService.get('JWT_SECRET'),
+      secret: this.configService.get<string>('JWT_SECRET'),
     });
   }
 
@@ -111,7 +111,7 @@ export class AuthService {
    */
   rotateToken(token: string, isRefreshToken: boolean) {
     const decoded = this.jwtService.verify(token, {
-      secret: this.configService.get('JWT_SECRET'),
+      secret: this.configService.get<string>('JWT_SECRET'),
     });
 
     if (!decoded.email || !decoded.sub || !decoded.type) {

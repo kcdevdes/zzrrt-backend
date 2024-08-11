@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Role, UserDocument } from './entity/users.entity';
+import { Role, UserModel } from './entity/users.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,22 +12,22 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(UserDocument)
-    private readonly userRepository: Repository<UserDocument>,
+    @InjectRepository(UserModel)
+    private readonly userRepository: Repository<UserModel>,
   ) {}
 
   async createUser(dto: CreateUserDto) {
     const newUser = this.userRepository.create({
       ...dto,
-      role: Role.user,
+      role: Role.USER,
     });
 
     return await this.userRepository.save(newUser);
   }
 
-  async findUserById(_id: string) {
+  async findUserById(id: string) {
     try {
-      return await this.userRepository.findOneBy({ _id });
+      return await this.userRepository.findOneBy({ id });
     } catch (err) {
       throw new InternalServerErrorException('Error finding user by id');
     }
@@ -41,29 +41,29 @@ export class UsersService {
     }
   }
 
-  async updateUser(_id: string, user: Partial<UserDocument>) {
-    const existingUser = await this.findUserById(_id);
+  async updateUser(id: string, user: Partial<UserModel>) {
+    const existingUser = await this.findUserById(id);
     if (!existingUser) {
       throw new BadRequestException('User not found');
     }
     try {
-      await this.userRepository.update({ _id }, user);
+      await this.userRepository.update({ id }, user);
       return {
         response: 'User updated successfully',
-        user: await this.findUserById(_id),
+        user: await this.findUserById(id),
       };
     } catch (err) {
       throw new InternalServerErrorException('Error updating user');
     }
   }
 
-  async deleteUser(_id: string) {
-    const existingUser = await this.findUserById(_id);
+  async deleteUser(id: string) {
+    const existingUser = await this.findUserById(id);
     if (!existingUser) {
       throw new BadRequestException('User not found');
     }
     try {
-      await this.userRepository.delete({ _id });
+      await this.userRepository.delete({ id });
       return {
         response: 'User deleted successfully',
         user: existingUser,
@@ -73,7 +73,7 @@ export class UsersService {
     }
   }
 
-  async findOrCreateUser(dto: CreateUserDto): Promise<UserDocument> {
+  async findOrCreateUser(dto: CreateUserDto): Promise<UserModel> {
     // Finds user by userId
     const user = await this.findUserByEmail(dto.email);
 
@@ -94,9 +94,9 @@ export class UsersService {
   /**
    * Returns if a user holds a valid token and _id both in order to access to the user's resource
    * @param req Request Object with `user` and `token` properties attached by AccessTokenGuard
-   * @param _id The ID to which a user wants to access
+   * @param id The ID to which a user wants to access
    */
-  authorizeRequest(req, _id: string) {
+  authorizeRequest(req, id: string) {
     if (!req) {
       throw new InternalServerErrorException('Request not found');
     }
@@ -105,7 +105,7 @@ export class UsersService {
       throw new BadRequestException('User not found in request');
     }
 
-    if (req.user._id !== _id) {
+    if (req.user.id !== id) {
       throw new UnauthorizedException(
         'User not authorized to access this resource',
       );

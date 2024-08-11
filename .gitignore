@@ -38,3 +38,4 @@ lerna-debug.log*
 
 # SECRET FILE
 .env
+.env.production

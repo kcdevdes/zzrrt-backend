@@ -10,13 +10,17 @@ import { MatchesModule } from './matches/matches.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: !process.env.NODE_ENV
+        ? '.env'
+        : `.env.${process.env.NODE_ENV}`,
     }),
     TypeOrmModule.forRoot({
-      type: 'mongodb',
-      // eslint-disable-next-line
-      url: process.env.MONGODB_FULL_URL,
-      useUnifiedTopology: true,
-      // eslint-disable-next-line
+      type: 'mysql',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DEFAULT_DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),

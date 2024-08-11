@@ -1,21 +1,19 @@
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { Exclude } from 'class-transformer';
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
-  ObjectIdColumn,
   OneToMany,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { MatchDocument } from '../../matches/entity/matches.entity';
+import { MatchModel } from '../../matches/entity/matches.entity';
 
 export enum Role {
-  admin = 'ADMIN',
-  user = 'USER',
-  guest = 'GUEST',
+  ADMIN = 'admin',
+  USER = 'user',
+  GUEST = 'guest',
 }
 
 export class OAuthProvider {
@@ -29,22 +27,19 @@ export class OAuthProvider {
 
   @IsString()
   @IsOptional()
-  @Column()
+  @Column({ nullable: true })
   providerAccessToken: string;
 
   @IsString()
   @IsOptional()
-  @Column()
+  @Column({ nullable: true })
   providerRefreshToken: string;
-
-  @OneToMany(() => MatchDocument, (match) => match.creator)
-  matches: MatchDocument[];
 }
 
-@Entity('users')
-export class UserDocument {
-  @ObjectIdColumn()
-  _id: string;
+@Entity()
+export class UserModel {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @IsString()
   @Column()
@@ -52,19 +47,18 @@ export class UserDocument {
 
   @IsString()
   @IsOptional()
-  @Column()
   @Exclude()
+  @Column({ nullable: true })
   password: string;
 
   @IsEmail()
   @Column()
   email: string;
 
-  @IsString()
-  @Column()
   @Column({
-    enum: Role,
-    default: Role.user,
+    type: 'enum',
+    enum: ['admin', 'user', 'guest'],
+    default: 'user',
   })
   role: Role;
 
@@ -78,11 +72,6 @@ export class UserDocument {
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
 
-  @BeforeInsert()
-  generateId() {
-    this._id = uuidv4();
-  }
-
-  @OneToMany(() => MatchDocument, (match) => match.creator)
-  matches: MatchDocument[];
+  @OneToMany(() => MatchModel, (match) => match.creator)
+  matches: MatchModel[];
 }

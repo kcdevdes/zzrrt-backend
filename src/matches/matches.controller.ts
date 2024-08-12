@@ -18,15 +18,6 @@ import { User } from '../users/decorator/user.decorator';
 export class MatchesController {
   constructor(private readonly matchesService: MatchesService) {}
 
-  @Post()
-  @UseGuards(AccessTokenGuard)
-  async postMatch(
-    @User() user,
-    @Body() dto: CreateMatchDto,
-  ): Promise<MatchModel> {
-    return this.matchesService.createMatch(user, dto);
-  }
-
   @Get(':id')
   async getMatchById(@Param('id') id: string): Promise<MatchModel> {
     return this.matchesService.findMatchById(id);
@@ -37,23 +28,27 @@ export class MatchesController {
     return this.matchesService.findAllMatches();
   }
 
-  @Post(':id/history')
+  @Post()
   @UseGuards(AccessTokenGuard)
-  async postMatchHistory(@User() user, @Param('id') id: string) {
-    return this.matchesService.postMatchHistory(user, id);
+  async postMatch(
+    @User() user,
+    @Body() dto: CreateMatchDto,
+  ): Promise<MatchModel> {
+    return this.matchesService.createMatch(user, dto);
   }
 
-  @Get(':id/play')
-  async getMatchPlayInfo() {}
+  @Get(':id/history')
+  async getMatchHistory() {}
+
+  @Post(':id/history')
+  @UseGuards(AccessTokenGuard)
+  async postMatchHistory(@User() user, @Param('id') id: string) {}
 
   @Patch(':id')
   async patchMatch() {}
 
   @Delete(':id')
   async deleteMatch() {}
-
-  @Get(':id/history')
-  async getMatchHistory() {}
 
   @Post(':id/like')
   async likeMatch() {}

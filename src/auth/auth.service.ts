@@ -25,18 +25,31 @@ export class AuthService {
       throw new UnauthorizedException('No User Found in Request');
     }
 
-    // registers the user if they don't exist
-    const provider = new OAuthProvider();
-    provider.provider = user.provider;
-    provider.providerUserId = user.providerId;
-    provider.providerAccessToken = user.accessToken;
-
     const creatUserDto = new CreateUserDto();
-    creatUserDto.email = user.email;
-    // if there is no lastname, make an empty string after firstname
-    creatUserDto.username =
-      user.firstName + (user.lastName ? user.lastName : '');
-    creatUserDto.oauthProvider = provider;
+
+    // if the user is from Google
+    if (user.provider === 'google') {
+      // registers the user if they don't exist
+      const provider = new OAuthProvider();
+      provider.provider = user.provider;
+      provider.providerUserId = user.providerId;
+      provider.providerAccessToken = user.accessToken;
+
+      creatUserDto.email = user.email;
+      // if there is no lastname, make an empty string after firstname
+      creatUserDto.username =
+        user.firstName + (user.lastName ? user.lastName : '');
+      creatUserDto.oauthProvider = provider;
+    } else {
+      // if the user is not from Google, they should have a password
+      if (!user.password) {
+        throw new BadRequestException('Password is required');
+      }
+
+      creatUserDto.email = user.email;
+      creatUserDto.password = user.password;
+      creatUserDto.username = user.username;
+    }
 
     const newUser: UserModel =
       await this.usersService.findOrCreateUser(creatUserDto);
@@ -59,7 +72,7 @@ export class AuthService {
 
     return this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_SECRET'),
-      expiresIn: isRefreshToken ? 3600 : 3600,
+      expiresIn: isRefreshToken ? 3600 : 1800,
     });
   }
 

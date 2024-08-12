@@ -1,28 +1,22 @@
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { Exclude } from 'class-transformer';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { MatchModel } from '../../matches/entity/matches.entity';
+import { BaseModel } from '../../common/entity/base.entity';
+import { MatchHistoryModel } from '../../matches/entity/match-histories.entity';
 
 export enum Role {
   ADMIN = 'admin',
   USER = 'user',
-  GUEST = 'guest',
 }
 
 export class OAuthProvider {
   @IsString()
-  @Column()
+  @Column({ nullable: true })
   provider: string;
 
   @IsString()
-  @Column()
+  @Column({ nullable: true })
   providerUserId: string;
 
   @IsString()
@@ -37,10 +31,7 @@ export class OAuthProvider {
 }
 
 @Entity()
-export class UserModel {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class UserModel extends BaseModel {
   @IsString()
   @Column()
   username: string;
@@ -57,21 +48,20 @@ export class UserModel {
 
   @Column({
     type: 'enum',
-    enum: ['admin', 'user', 'guest'],
-    default: 'user',
+    enum: Object.values(Role),
+    default: Role.USER,
   })
+  @Exclude()
   role: Role;
 
+  @IsOptional()
   @Exclude()
   @Column(() => OAuthProvider)
   oauthProvider: OAuthProvider;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
-
   @OneToMany(() => MatchModel, (match) => match.creator)
-  matches: MatchModel[];
+  myMatches: MatchModel[];
+
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.userId)
+  myHistories: MatchHistoryModel[];
 }

@@ -1,22 +1,13 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { UserModel } from '../../users/entity/users.entity';
 import { IsBoolean, IsString } from 'class-validator';
-
-// import { MatchHistoryDocument } from './match-histories.entity';
+import { BaseModel } from '../../common/entity/base.entity';
+import { MatchOptionModel } from './match-options.entity';
+import { MatchHistoryModel } from './match-histories.entity';
 
 @Entity()
-export class MatchModel {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @ManyToOne(() => UserModel, (user) => user.matches, { nullable: false })
+export class MatchModel extends BaseModel {
+  @ManyToOne(() => UserModel, (user) => user.myMatches, { nullable: false })
   creator: UserModel;
 
   @IsString()
@@ -31,9 +22,11 @@ export class MatchModel {
   @Column()
   isPublic: boolean = false;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.matchId)
+  options: MatchOptionModel[];
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.matchId, {
+    nullable: true,
+  })
+  histories: MatchHistoryModel[];
 }

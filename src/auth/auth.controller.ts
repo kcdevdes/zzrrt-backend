@@ -19,8 +19,9 @@ import {
   ApiPermanentRedirectResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { LoginDto } from './dto/login.dto';
 
-@Controller('login')
+@Controller('auth')
 @ApiTags('Authorization API')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -50,6 +51,11 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async googleAuthRedirect(@Req() req) {
     return await this.authService.login(req.user);
+  }
+
+  @Post('login')
+  async login(dto: LoginDto) {
+    return await this.authService.login(dto);
   }
 
   @Get('status')

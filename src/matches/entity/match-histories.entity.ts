@@ -1,43 +1,19 @@
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  ManyToOne,
-  ObjectIdColumn,
-} from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { MatchDocument } from './matches.entity';
-
-@Entity('match-histories')
-export class MatchHistoryDocument {
-  @ObjectIdColumn()
-  _id: string;
-
-  @ManyToOne(() => MatchDocument, (match) => match.history)
-  match: MatchDocument;
-
-  @Column()
-  playedAt: Date;
-
-  @Column(() => Choice)
-  choices: Choice[];
-
-  @BeforeInsert()
-  generateId() {
-    if (!this._id) {
-      this._id = uuidv4();
-    }
-  }
-}
+import { Entity, ManyToOne, OneToMany } from 'typeorm';
+import { BaseModel } from '../../common/entity/base.entity';
+import { MatchModel } from './matches.entity';
+import { UserModel } from '../../users/entity/users.entity';
+import { MatchChoiceModel } from './match-choices.entity';
 
 @Entity()
-class Choice {
-  @Column()
-  optionAId: string;
+export class MatchHistoryModel extends BaseModel {
+  @ManyToOne(() => MatchModel, (match) => match.histories)
+  match: MatchModel;
 
-  @Column()
-  optionBId: string;
+  @ManyToOne(() => UserModel, (user) => user.myHistories, { nullable: true })
+  creator: UserModel;
 
-  @Column()
-  choiceId: string;
+  @OneToMany(() => MatchChoiceModel, (choice) => choice.matchHistory, {
+    nullable: true,
+  })
+  choices: MatchChoiceModel[];
 }

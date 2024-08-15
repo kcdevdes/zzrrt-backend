@@ -18,26 +18,26 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(AccessTokenGuard)
-  async getUsers(@Param('id') _id: string, @Req() req) {
-    this.usersService.authorizeRequest(req, _id);
-    return this.usersService.findUserById(_id);
+  async getUsers(@Param('id') id: string, @Req() req) {
+    this.usersService.authorizeRequest(req, id);
+    return this.usersService.findUserById(id);
   }
 
   @Patch(':id')
   @UseGuards(AccessTokenGuard)
   async updateUser(
-    @Param('id') _id: string,
+    @Param('id') id: string,
     @Req() req,
     @Body() dto: UpdateUserDto,
   ) {
-    this.usersService.authorizeRequest(req, _id);
-    return this.usersService.updateUser(_id, dto);
+    this.usersService.authorizeRequest(req, id);
+    return this.usersService.updateUser(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)
-  async deleteUser(@Param('id') _id: string, @Req() req) {
-    this.usersService.authorizeRequest(req, _id);
-    return this.usersService.deleteUser(_id);
+  async deleteUser(@Param('id') id: string, @Req() req) {
+    this.usersService.authorizeRequest(req, id);
+    return this.usersService.deleteUser(id);
   }
 }

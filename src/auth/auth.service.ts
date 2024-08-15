@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { OAuthProvider, UserDocument } from '../users/entity/users.entity';
+import { OAuthProvider, UserModel } from '../users/entity/users.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,25 +25,38 @@ export class AuthService {
       throw new UnauthorizedException('No User Found in Request');
     }
 
-    // registers the user if they don't exist
-    const provider = new OAuthProvider();
-    provider.provider = user.provider;
-    provider.providerUserId = user.providerId;
-    provider.providerAccessToken = user.accessToken;
-
     const creatUserDto = new CreateUserDto();
-    creatUserDto.email = user.email;
-    // if there is no lastname, make an empty string after firstname
-    creatUserDto.username =
-      user.firstName + (user.lastName ? user.lastName : '');
-    creatUserDto.oauthProvider = provider;
 
-    const newUser: UserDocument =
+    // if the user is from Google
+    if (user.provider === 'google') {
+      // registers the user if they don't exist
+      const provider = new OAuthProvider();
+      provider.provider = user.provider;
+      provider.providerUserId = user.providerId;
+      provider.providerAccessToken = user.accessToken;
+
+      creatUserDto.email = user.email;
+      // if there is no lastname, make an empty string after firstname
+      creatUserDto.username =
+        user.firstName + (user.lastName ? user.lastName : '');
+      creatUserDto.oauthProvider = provider;
+    } else {
+      // if the user is not from Google, they should have a password
+      if (!user.password) {
+        throw new BadRequestException('Password is required');
+      }
+
+      creatUserDto.email = user.email;
+      creatUserDto.password = user.password;
+      creatUserDto.username = user.username;
+    }
+
+    const newUser: UserModel =
       await this.usersService.findOrCreateUser(creatUserDto);
 
     return {
-      access_token: this.signToken(newUser.email, newUser._id, false),
-      refresh_token: this.signToken(newUser.email, newUser._id, true),
+      access_token: this.signToken(newUser.email, newUser.id, false),
+      refresh_token: this.signToken(newUser.email, newUser.id, true),
     };
   }
 
@@ -99,7 +112,7 @@ export class AuthService {
 
   verifyToken(token: string) {
     return this.jwtService.verify(token, {
-      secret: this.configService.get('JWT_SECRET'),
+      secret: this.configService.get<string>('JWT_SECRET'),
     });
   }
 
@@ -111,7 +124,7 @@ export class AuthService {
    */
   rotateToken(token: string, isRefreshToken: boolean) {
     const decoded = this.jwtService.verify(token, {
-      secret: this.configService.get('JWT_SECRET'),
+      secret: this.configService.get<string>('JWT_SECRET'),
     });
 
     if (!decoded.email || !decoded.sub || !decoded.type) {

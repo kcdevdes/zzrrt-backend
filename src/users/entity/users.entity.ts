@@ -1,88 +1,67 @@
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { Exclude } from 'class-transformer';
-import {
-  BeforeInsert,
-  Column,
-  CreateDateColumn,
-  Entity,
-  ObjectIdColumn,
-  OneToMany,
-  UpdateDateColumn,
-} from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { MatchDocument } from '../../matches/entity/matches.entity';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { MatchModel } from '../../matches/entity/matches.entity';
+import { BaseModel } from '../../common/entity/base.entity';
+import { MatchHistoryModel } from '../../matches/entity/match-histories.entity';
 
 export enum Role {
-  admin = 'ADMIN',
-  user = 'USER',
-  guest = 'GUEST',
+  ADMIN = 'admin',
+  USER = 'user',
 }
 
 export class OAuthProvider {
   @IsString()
-  @Column()
+  @Column({ nullable: true })
   provider: string;
 
   @IsString()
-  @Column()
+  @Column({ nullable: true })
   providerUserId: string;
 
   @IsString()
   @IsOptional()
-  @Column()
+  @Column({ nullable: true })
   providerAccessToken: string;
 
   @IsString()
   @IsOptional()
-  @Column()
+  @Column({ nullable: true })
   providerRefreshToken: string;
-
-  @OneToMany(() => MatchDocument, (match) => match.creator)
-  matches: MatchDocument[];
 }
 
-@Entity('users')
-export class UserDocument {
-  @ObjectIdColumn()
-  _id: string;
-
+@Entity()
+export class UserModel extends BaseModel {
   @IsString()
   @Column()
   username: string;
 
   @IsString()
   @IsOptional()
-  @Column()
   @Exclude()
+  @Column({ nullable: true })
   password: string;
 
   @IsEmail()
   @Column()
   email: string;
 
-  @IsString()
-  @Column()
   @Column({
-    enum: Role,
-    default: Role.user,
+    type: 'enum',
+    enum: Object.values(Role),
+    default: Role.USER,
   })
+  @Exclude()
   role: Role;
 
+  @IsOptional()
   @Exclude()
   @Column(() => OAuthProvider)
   oauthProvider: OAuthProvider;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
+  @OneToMany(() => MatchModel, (match) => match.creator)
+  myMatches: MatchModel[];
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
-
-  @BeforeInsert()
-  generateId() {
-    this._id = uuidv4();
-  }
-
-  @OneToMany(() => MatchDocument, (match) => match.creator)
-  matches: MatchDocument[];
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.creator)
+  myHistories: MatchHistoryModel[];
 }

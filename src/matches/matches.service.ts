@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MatchModel } from './entity/matches.entity';
@@ -12,6 +13,7 @@ import { MatchHistoryModel } from './entity/match-histories.entity';
 import { MatchChoiceModel } from './entity/match-choices.entity';
 import { MatchOptionModel } from './entity/match-options.entity';
 import { CreateMatchHistoryDto } from './dto/create-match-history.dto';
+import { UpdateMatchDto } from './dto/update-match.dto';
 
 @Injectable()
 export class MatchesService {
@@ -83,10 +85,11 @@ export class MatchesService {
   }
 
   async postMatchHistory(
+    user: UserModel,
     matchId: string,
     dto: CreateMatchHistoryDto,
   ): Promise<MatchHistoryModel> {
-    const { userId, choices } = dto;
+    const { choices } = dto;
 
     // Checks if the match and user exist
     const match = await this.matchesRepository.findOne({
@@ -96,18 +99,16 @@ export class MatchesService {
       throw new NotFoundException('No such match');
     }
 
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('No such user');
     }
 
-    // Creates a new match history
+    // Creates and saves a new match history
     const matchHistory = this.matchHistoriesRepository.create({
       match,
-      creator: user,
+      player: user,
     });
 
-    // Saves it
     const savedHistory = await this.matchHistoriesRepository.save(matchHistory);
 
     // Saves all provided options and the choice of the user
@@ -139,9 +140,69 @@ export class MatchesService {
     return savedHistory;
   }
 
-  async updateMatch() {}
+  async findMatchHistoryById(historyId: string) {
+    const existingHistory = await this.matchHistoriesRepository.findOne({
+      where: { id: historyId },
+      relations: ['creator', 'match', 'choices'],
+    });
+    if (!existingHistory) {
+      throw new NotFoundException('No such match history');
+    }
 
-  async deleteMatch() {}
+    return existingHistory;
+  }
+
+  async updateMatch(user: UserModel, id: string, dto: UpdateMatchDto) {
+    const existingMatch = await this.matchesRepository.findOne({
+      where: { id },
+    });
+
+    if (!existingMatch) {
+      throw new NotFoundException('No such match');
+    }
+
+    if (user.id !== existingMatch.creator.id) {
+      throw new UnauthorizedException('You are not the creator of this match');
+    }
+
+    await this.matchesRepository.save({
+      ...existingMatch,
+      ...dto,
+    });
+
+    return true;
+  }
+
+  async deleteMatch(user: UserModel, id: string) {
+    const existingMatch = await this.matchesRepository.findOne({
+      where: { id },
+    });
+
+    if (!existingMatch) {
+      throw new NotFoundException('No such match');
+    }
+
+    if (user.id !== existingMatch.creator.id) {
+      throw new UnauthorizedException('You are not the creator of this match');
+    }
+
+    await this.matchesRepository.delete({ id });
+
+    return true;
+  }
 
   async postOptions() {}
+
+  async findCommentsOfMatchById(id: string) {
+    const match = await this.matchesRepository.findOne({
+      where: { id },
+      relations: ['comments'],
+    });
+
+    if (!match) {
+      throw new NotFoundException('No such match');
+    }
+
+    return match.comments;
+  }
 }

@@ -10,7 +10,7 @@ export class MatchHistoryModel extends BaseModel {
   match: MatchModel;
 
   @ManyToOne(() => UserModel, (user) => user.myHistories, { nullable: true })
-  creator: UserModel;
+  player: UserModel;
 
   @OneToMany(() => MatchChoiceModel, (choice) => choice.matchHistory, {
     nullable: true,

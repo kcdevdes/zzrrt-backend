@@ -13,6 +13,9 @@ import { CreateMatchDto } from './dto/create-match.dto';
 import { MatchModel } from './entity/matches.entity';
 import { AccessTokenGuard } from '../auth/guards/bearer-token.guard';
 import { User } from '../users/decorator/user.decorator';
+import { CreateMatchHistoryDto } from './dto/create-match-history.dto';
+import { UpdateMatchDto } from './dto/update-match.dto';
+import { UserModel } from '../users/entity/users.entity';
 
 @Controller('matches')
 export class MatchesController {
@@ -38,33 +41,39 @@ export class MatchesController {
   }
 
   @Get(':id/history')
-  async getMatchHistory() {}
+  async getMatchHistory(@Param('id') id: string) {
+    return this.matchesService.findMatchHistoryById(id);
+  }
 
   @Post(':id/history')
   @UseGuards(AccessTokenGuard)
-  async postMatchHistory(@User() user, @Param('id') id: string) {}
+  async postMatchHistory(
+    @User() user,
+    @Param('id') id: string,
+    @Body() dto: CreateMatchHistoryDto,
+  ) {
+    return this.matchesService.postMatchHistory(user, id, dto);
+  }
 
   @Patch(':id')
-  async patchMatch() {}
+  @UseGuards(AccessTokenGuard)
+  async patchMatch(
+    @User() user,
+    @Param('id') id: string,
+    @Body() dto: UpdateMatchDto,
+  ) {
+    return this.matchesService.updateMatch(user, id, dto);
+  }
 
   @Delete(':id')
-  async deleteMatch() {}
+  @UseGuards(AccessTokenGuard)
+  async deleteMatch(@User() user: UserModel, @Param('id') id: string) {
+    return this.matchesService.deleteMatch(user, id);
+  }
 
   @Post(':id/like')
   async likeMatch() {}
 
   @Delete(':id/like')
   async unlikeMatch() {}
-
-  @Get(':id/comment')
-  async getComments() {}
-
-  @Post(':id/comment')
-  async addComment() {}
-
-  @Patch(':match_id/comment/:comment_id')
-  async patchComment() {}
-
-  @Delete(':match_id/comment/:comment_id')
-  async deleteComment() {}
 }

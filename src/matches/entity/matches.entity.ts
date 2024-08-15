@@ -4,6 +4,7 @@ import { IsBoolean, IsString } from 'class-validator';
 import { BaseModel } from '../../common/entity/base.entity';
 import { MatchOptionModel } from './match-options.entity';
 import { MatchHistoryModel } from './match-histories.entity';
+import { MatchCommentsModel } from '../../comments/entity/match-comments.entity';
 
 @Entity()
 export class MatchModel extends BaseModel {
@@ -29,4 +30,7 @@ export class MatchModel extends BaseModel {
     nullable: true,
   })
   histories: MatchHistoryModel[];
+
+  @OneToMany(() => MatchCommentsModel, (comment) => comment.match)
+  comments: MatchCommentsModel[];
 }

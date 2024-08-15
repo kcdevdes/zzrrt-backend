@@ -9,10 +9,11 @@ export class MatchOptionModel extends BaseModel {
   match: string;
 
   @IsString()
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
   @IsString()
+  @IsOptional()
   @Column({ nullable: true })
   description: string;
 

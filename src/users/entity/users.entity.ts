@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { MatchModel } from '../../matches/entity/matches.entity';
 import { BaseModel } from '../../common/entity/base.entity';
 import { MatchHistoryModel } from '../../matches/entity/match-histories.entity';
+import { MatchCommentsModel } from '../../comments/entity/match-comments.entity';
 
 export enum Role {
   ADMIN = 'admin',
@@ -62,6 +63,9 @@ export class UserModel extends BaseModel {
   @OneToMany(() => MatchModel, (match) => match.creator)
   myMatches: MatchModel[];
 
-  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.creator)
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.player)
   myHistories: MatchHistoryModel[];
+
+  @OneToMany(() => MatchCommentsModel, (comment) => comment.user)
+  comments: MatchCommentsModel[];
 }

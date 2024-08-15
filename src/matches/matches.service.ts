@@ -33,10 +33,24 @@ export class MatchesService {
     dto: CreateMatchDto,
   ): Promise<MatchModel> {
     try {
+      // Pushes all options to the database first
+      const options: MatchOptionModel[] = [];
+      for (const option of dto.options) {
+        const newOption = this.matchOptionsRepository.create({
+          name: option.name,
+          description: option.description,
+          resourceUrl: option.resourceUrl,
+        });
+        await this.matchOptionsRepository.save(newOption);
+        options.push(newOption);
+      }
+
+      // Creaates a new match with the provided options
       const newMatch = this.matchesRepository.create({
         creator,
         title: dto.title,
         description: dto.description,
+        options,
       });
       return await this.matchesRepository.save(newMatch);
     } catch (err) {
@@ -68,20 +82,6 @@ export class MatchesService {
     return existingMatch;
   }
 
-  async findMatchHistoriesByMatchId(matchId: string) {
-    // Finds all match histories for a given matchId
-    const matchHistories = await this.matchHistoriesRepository.find({
-      where: { matchId },
-      relations: ['userId', 'choices'],
-    });
-
-    if (!matchHistories || matchHistories.length === 0) {
-      throw new NotFoundException('No such match history');
-    }
-
-    return matchHistories;
-  }
-
   async postMatchHistory(
     matchId: string,
     dto: CreateMatchHistoryDto,
@@ -103,8 +103,8 @@ export class MatchesService {
 
     // Creates a new match history
     const matchHistory = this.matchHistoriesRepository.create({
-      matchId: match,
-      userId: user,
+      match,
+      creator: user,
     });
 
     // Saves it
@@ -128,7 +128,7 @@ export class MatchesService {
       });
 
       const choice = this.matchChoicesRepository.create({
-        matchHistoryId: savedHistory,
+        matchHistory: savedHistory,
         selectedOption,
         allOptions,
       });

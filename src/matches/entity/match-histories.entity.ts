@@ -7,12 +7,12 @@ import { MatchChoiceModel } from './match-choices.entity';
 @Entity()
 export class MatchHistoryModel extends BaseModel {
   @ManyToOne(() => MatchModel, (match) => match.histories)
-  matchId: string;
+  match: MatchModel;
 
   @ManyToOne(() => UserModel, (user) => user.myHistories, { nullable: true })
-  userId: UserModel;
+  creator: UserModel;
 
-  @OneToMany(() => MatchChoiceModel, (choice) => choice.matchHistoryId, {
+  @OneToMany(() => MatchChoiceModel, (choice) => choice.matchHistory, {
     nullable: true,
   })
   choices: MatchChoiceModel[];

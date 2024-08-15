@@ -62,6 +62,6 @@ export class UserModel extends BaseModel {
   @OneToMany(() => MatchModel, (match) => match.creator)
   myMatches: MatchModel[];
 
-  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.userId)
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.creator)
   myHistories: MatchHistoryModel[];
 }

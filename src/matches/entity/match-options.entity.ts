@@ -1,22 +1,23 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseModel } from '../../common/entity/base.entity';
 import { MatchModel } from './matches.entity';
-import { IsString, IsUrl } from 'class-validator';
+import { IsOptional, IsString, IsUrl } from 'class-validator';
 
 @Entity()
 export class MatchOptionModel extends BaseModel {
   @ManyToOne(() => MatchModel, (match) => match.options)
-  matchId: string;
+  match: string;
 
   @IsString()
-  @Column()
-  title: string;
+  @Column({ nullable: true })
+  name: string;
 
   @IsString()
-  @Column()
-  content: string;
+  @Column({ nullable: true })
+  description: string;
 
   @IsUrl()
-  @Column()
+  @IsOptional()
+  @Column({ nullable: true })
   resourceUrl: string;
 }

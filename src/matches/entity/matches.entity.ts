@@ -22,10 +22,10 @@ export class MatchModel extends BaseModel {
   @Column()
   isPublic: boolean = false;
 
-  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.matchId)
+  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.match)
   options: MatchOptionModel[];
 
-  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.matchId, {
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.match, {
     nullable: true,
   })
   histories: MatchHistoryModel[];

@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import {
   AccessTokenGuard,
@@ -19,7 +18,7 @@ import {
   ApiPermanentRedirectResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
+import { GoogleGuard } from './guards/google.guard';
 
 @Controller('auth')
 @ApiTags('Authorization API')
@@ -27,7 +26,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleGuard)
   @ApiOperation({
     summary: 'Google OAuth Endpoint',
     description: 'Accepts login requests via Google OAuth progress',
@@ -39,7 +38,7 @@ export class AuthController {
   async googleAuth(@Req() req) {}
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleGuard)
   @ApiOperation({
     summary: 'Google OAuth Redirect URL',
     description: 'Not an endpoint. No request via this route',
@@ -53,10 +52,10 @@ export class AuthController {
     return await this.authService.login(req.user);
   }
 
-  @Post('login')
-  async login(dto: LoginDto) {
-    return await this.authService.login(dto);
-  }
+  // @Post('login')
+  // async login(dto: LoginDto) {
+  //   return await this.authService.login(dto);
+  // }
 
   @Get('status')
   @UseGuards(AccessTokenGuard)

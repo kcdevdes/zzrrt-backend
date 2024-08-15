@@ -19,7 +19,7 @@ export class MatchChoiceModel {
   id: number;
 
   @ManyToOne(() => MatchHistoryModel, (history) => history.choices)
-  matchHistoryId: MatchHistoryModel;
+  matchHistory: MatchHistoryModel;
 
   @CreateDateColumn()
   createdAt: Date; // playedAt

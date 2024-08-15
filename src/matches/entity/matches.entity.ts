@@ -8,7 +8,10 @@ import { MatchCommentsModel } from '../../comments/entity/match-comments.entity'
 
 @Entity()
 export class MatchModel extends BaseModel {
-  @ManyToOne(() => UserModel, (user) => user.myMatches, { nullable: false })
+  @ManyToOne(() => UserModel, (user) => user.myMatches, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   creator: UserModel;
 
   @IsString()
@@ -23,7 +26,7 @@ export class MatchModel extends BaseModel {
   @Column()
   isPublic: boolean = false;
 
-  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.match)
+  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.match, {})
   options: MatchOptionModel[];
 
   @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.match, {
@@ -31,6 +34,13 @@ export class MatchModel extends BaseModel {
   })
   histories: MatchHistoryModel[];
 
-  @OneToMany(() => MatchCommentsModel, (comment) => comment.match)
+  @OneToMany(() => MatchCommentsModel, (comment) => comment.match, {
+    nullable: true,
+  })
   comments: MatchCommentsModel[];
+
+  @OneToMany(() => UserModel, (user) => user.likedMatches, {
+    nullable: true,
+  })
+  likedUsers: UserModel[];
 }

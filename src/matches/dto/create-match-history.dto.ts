@@ -11,7 +11,8 @@ export class MatchChoiceDto {
   @IsString()
   selectedOptionId: string;
 
-  @IsArray()
-  @Type(() => String)
+  @IsString({
+    each: true,
+  })
   allOptionsIds: string[];
 }

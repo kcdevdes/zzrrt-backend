@@ -16,10 +16,14 @@ import { User } from '../users/decorator/user.decorator';
 import { CreateMatchHistoryDto } from './dto/create-match-history.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { UserModel } from '../users/entity/users.entity';
+import { DataSource } from 'typeorm';
 
 @Controller('matches')
 export class MatchesController {
-  constructor(private readonly matchesService: MatchesService) {}
+  constructor(
+    private readonly matchesService: MatchesService,
+    private readonly dataSource: DataSource,
+  ) {}
 
   @Get(':id')
   async getMatchById(@Param('id') id: string): Promise<MatchModel> {
@@ -52,7 +56,22 @@ export class MatchesController {
     @Param('id') id: string,
     @Body() dto: CreateMatchHistoryDto,
   ) {
-    return this.matchesService.postMatchHistory(user, id, dto);
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+    try {
+      const result = await this.matchesService.postMatchHistory(
+        user,
+        id,
+        dto,
+        qr,
+      );
+      await qr.commitTransaction();
+      return result;
+    } catch (err) {
+      await qr.rollbackTransaction();
+      throw err;
+    }
   }
 
   @Patch(':id')
@@ -72,8 +91,13 @@ export class MatchesController {
   }
 
   @Post(':id/like')
-  async likeMatch() {}
+  @UseGuards(AccessTokenGuard)
+  async likeMatch(@User() user: UserModel, id: string) {
+    return this.matchesService.likeMatch(user, id);
+  }
 
   @Delete(':id/like')
-  async unlikeMatch() {}
+  async unlikeMatch(@User() user: UserModel, id: string) {
+    return this.matchesService.unlikeMatch(user, id);
+  }
 }

@@ -8,17 +8,21 @@ export class MatchCommentsModel extends BaseModel {
   @Column()
   comment: string;
 
-  @ManyToOne(() => UserModel, (user) => user.comments)
+  @ManyToOne(() => UserModel, (user) => user.comments, {
+    onDelete: 'CASCADE',
+  })
   user: UserModel;
 
-  @ManyToOne(() => MatchModel, (match) => match.comments)
+  @ManyToOne(() => MatchModel, (match) => match.comments, {
+    onDelete: 'CASCADE',
+  })
   match: MatchModel;
 
   @Column()
   isEdited: boolean = false;
 
   @AfterUpdate()
-  updateCounters() {
+  updateFlag() {
     this.isEdited = true;
   }
 }

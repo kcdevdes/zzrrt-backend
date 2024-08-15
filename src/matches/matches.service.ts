@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -6,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MatchModel } from './entity/matches.entity';
-import { In, Repository } from 'typeorm';
+import { In, QueryRunner, Repository } from 'typeorm';
 import { UserModel } from '../users/entity/users.entity';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { MatchHistoryModel } from './entity/match-histories.entity';
@@ -88,6 +89,7 @@ export class MatchesService {
     user: UserModel,
     matchId: string,
     dto: CreateMatchHistoryDto,
+    qr?: QueryRunner,
   ): Promise<MatchHistoryModel> {
     const { choices } = dto;
 
@@ -103,20 +105,28 @@ export class MatchesService {
       throw new NotFoundException('No such user');
     }
 
+    // DB Transaction Repositories
+    const historyRepository = qr
+      ? qr.manager.getRepository(MatchHistoryModel)
+      : this.matchHistoriesRepository;
+    const choiceRepository = qr
+      ? qr.manager.getRepository(MatchChoiceModel)
+      : this.matchChoicesRepository;
+
     // Creates and saves a new match history
-    const matchHistory = this.matchHistoriesRepository.create({
+    const matchHistory = historyRepository.create({
       match,
       player: user,
     });
 
-    const savedHistory = await this.matchHistoriesRepository.save(matchHistory);
+    const savedHistory = await historyRepository.save(matchHistory);
 
     // Saves all provided options and the choice of the user
     for (const choiceDto of choices) {
       const { selectedOptionId, allOptionsIds } = choiceDto;
 
-      const selectedOption = await this.matchOptionsRepository.findOneBy({
-        id: selectedOptionId,
+      const selectedOption = await this.matchOptionsRepository.findOne({
+        where: { id: selectedOptionId },
       });
       if (!selectedOption) {
         throw new NotFoundException('No such match option');
@@ -128,28 +138,28 @@ export class MatchesService {
         },
       });
 
-      const choice = this.matchChoicesRepository.create({
+      const choice = choiceRepository.create({
         matchHistory: savedHistory,
         selectedOption,
         allOptions,
       });
 
-      await this.matchChoicesRepository.save(choice);
+      await choiceRepository.save(choice);
     }
 
     return savedHistory;
   }
 
-  async findMatchHistoryById(historyId: string) {
-    const existingHistory = await this.matchHistoriesRepository.findOne({
-      where: { id: historyId },
-      relations: ['creator', 'match', 'choices'],
+  async findMatchHistoryById(matchId: string) {
+    const existingHistories = await this.matchHistoriesRepository.find({
+      where: { match: { id: matchId } },
+      relations: ['player', 'match', 'choices'],
     });
-    if (!existingHistory) {
+    if (!existingHistories) {
       throw new NotFoundException('No such match history');
     }
 
-    return existingHistory;
+    return existingHistories;
   }
 
   async updateMatch(user: UserModel, id: string, dto: UpdateMatchDto) {
@@ -204,5 +214,43 @@ export class MatchesService {
     }
 
     return match.comments;
+  }
+
+  async likeMatch(user: UserModel, id: string) {
+    const match = await this.matchesRepository.findOne({
+      where: { id },
+    });
+
+    if (!match) {
+      throw new NotFoundException('No such match');
+    }
+
+    if (match.likedUsers.includes(user)) {
+      throw new BadRequestException('You have already liked this match');
+    }
+
+    match.likedUsers.push(user);
+    await this.matchesRepository.save(match);
+    return true;
+  }
+
+  async unlikeMatch(user: UserModel, id: string) {
+    const match = await this.matchesRepository.findOne({
+      where: { id },
+    });
+
+    if (!match) {
+      throw new NotFoundException('No such match');
+    }
+
+    if (!match.likedUsers.includes(user)) {
+      throw new BadRequestException('You have not liked this match');
+    }
+
+    match.likedUsers = match.likedUsers.filter(
+      (likedUser) => likedUser !== user,
+    );
+    await this.matchesRepository.save(match);
+    return true;
   }
 }

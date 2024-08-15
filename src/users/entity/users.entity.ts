@@ -68,4 +68,7 @@ export class UserModel extends BaseModel {
 
   @OneToMany(() => MatchCommentsModel, (comment) => comment.user)
   comments: MatchCommentsModel[];
+
+  @OneToMany(() => MatchModel, (match) => match.likedUsers)
+  likedMatches: MatchModel[];
 }

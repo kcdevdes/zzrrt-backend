@@ -17,6 +17,7 @@ import { CreateMatchHistoryDto } from './dto/create-match-history.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { UserModel } from '../users/entity/users.entity';
 import { DataSource } from 'typeorm';
+import { SearchMatchesDto } from './dto/search-matches.dto';
 
 @Controller('matches')
 export class MatchesController {
@@ -33,6 +34,11 @@ export class MatchesController {
   @Get()
   async getAllMatches() {
     return this.matchesService.findAllMatches();
+  }
+
+  @Get('search')
+  async searchMatches(@Body() dto: SearchMatchesDto) {
+    return this.matchesService.searchMatches(dto);
   }
 
   @Post()

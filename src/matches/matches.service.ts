@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MatchModel } from './entity/matches.entity';
-import { In, QueryRunner, Repository } from 'typeorm';
+import { In, Like, QueryRunner, Repository } from 'typeorm';
 import { UserModel } from '../users/entity/users.entity';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { MatchHistoryModel } from './entity/match-histories.entity';
@@ -15,6 +15,7 @@ import { MatchChoiceModel } from './entity/match-choices.entity';
 import { MatchOptionModel } from './entity/match-options.entity';
 import { CreateMatchHistoryDto } from './dto/create-match-history.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
+import { SearchMatchesDto } from './dto/search-matches.dto';
 
 @Injectable()
 export class MatchesService {
@@ -252,5 +253,20 @@ export class MatchesService {
     );
     await this.matchesRepository.save(match);
     return true;
+  }
+
+  async searchMatches(dto: SearchMatchesDto): Promise<MatchModel[]> {
+    const { query = '' } = dto;
+    try {
+      return await this.matchesRepository.find({
+        where: [
+          { title: Like(`%${query}%`) },
+          { description: Like(`%${query}%`) },
+        ],
+        relations: ['creator', 'options'],
+      });
+    } catch (err) {
+      throw new InternalServerErrorException('Failed to search matches');
+    }
   }
 }

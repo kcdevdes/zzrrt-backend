@@ -11,8 +11,10 @@ import {
 import { AccessTokenGuard } from '../auth/guards/bearer-token.guard';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiTags('User API')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

@@ -17,17 +17,24 @@ import { CreateMatchHistoryDto } from './dto/create-match-history.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { UserModel } from '../users/entity/users.entity';
 import { DataSource } from 'typeorm';
+import { ApiTags } from '@nestjs/swagger';
 import { SearchMatchesDto } from './dto/search-matches.dto';
 
 @Controller('matches')
+@ApiTags('Match API')
 export class MatchesController {
   constructor(
     private readonly matchesService: MatchesService,
     private readonly dataSource: DataSource,
   ) {}
 
+  @Get('search')
+  async searchMatches(@Body() dto: SearchMatchesDto) {
+    return this.matchesService.searchMatches(dto);
+  }
+
   @Get(':id')
-  async getMatchById(@Param('id') id: string): Promise<MatchModel> {
+  async getMatchById(@Body() id: string): Promise<MatchModel> {
     return this.matchesService.findMatchById(id);
   }
 
@@ -36,18 +43,23 @@ export class MatchesController {
     return this.matchesService.findAllMatches();
   }
 
-  @Get('search')
-  async searchMatches(@Body() dto: SearchMatchesDto) {
-    return this.matchesService.searchMatches(dto);
-  }
-
   @Post()
   @UseGuards(AccessTokenGuard)
   async postMatch(
     @User() user,
     @Body() dto: CreateMatchDto,
   ): Promise<MatchModel> {
-    return this.matchesService.createMatch(user, dto);
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+    try {
+      const result = await this.matchesService.createMatch(user, dto);
+      await qr.commitTransaction();
+      return result;
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    }
   }
 
   @Get(':id/history')
@@ -96,6 +108,13 @@ export class MatchesController {
     return this.matchesService.deleteMatch(user, id);
   }
 
+  @Get(':id/like')
+  async getMatchLikeCounter(@Param('id') id: string) {
+    return {
+      count: await this.matchesService.getMatchLikeCounterById(id),
+    };
+  }
+
   @Post(':id/like')
   @UseGuards(AccessTokenGuard)
   async likeMatch(@User() user: UserModel, id: string) {
@@ -103,6 +122,7 @@ export class MatchesController {
   }
 
   @Delete(':id/like')
+  @UseGuards(AccessTokenGuard)
   async unlikeMatch(@User() user: UserModel, id: string) {
     return this.matchesService.unlikeMatch(user, id);
   }

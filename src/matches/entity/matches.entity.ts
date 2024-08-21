@@ -1,12 +1,21 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { UserModel } from '../../users/entity/users.entity';
-import { IsBoolean, IsString } from 'class-validator';
+import { IsBoolean, IsString, IsUrl } from 'class-validator';
 import { BaseModel } from '../../common/entity/base.entity';
 import { MatchOptionModel } from './match-options.entity';
 import { MatchHistoryModel } from './match-histories.entity';
 import { MatchCommentsModel } from '../../comments/entity/match-comments.entity';
 
 @Entity()
+@Index('idx_title', ['title'], { fulltext: true })
+@Index('idx_description', ['description'], { fulltext: true })
 export class MatchModel extends BaseModel {
   @ManyToOne(() => UserModel, (user) => user.myMatches, {
     nullable: false,
@@ -26,21 +35,19 @@ export class MatchModel extends BaseModel {
   @Column()
   isPublic: boolean = false;
 
-  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.match, {})
+  @IsUrl()
+  @Column({ nullable: true })
+  thumbnail: string;
+
+  @OneToMany(() => MatchOptionModel, (matchOption) => matchOption.match)
   options: MatchOptionModel[];
 
-  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.match, {
-    nullable: true,
-  })
+  @OneToMany(() => MatchHistoryModel, (matchHistory) => matchHistory.match)
   histories: MatchHistoryModel[];
 
-  @OneToMany(() => MatchCommentsModel, (comment) => comment.match, {
-    nullable: true,
-  })
+  @OneToMany(() => MatchCommentsModel, (comment) => comment.match)
   comments: MatchCommentsModel[];
 
-  @OneToMany(() => UserModel, (user) => user.likedMatches, {
-    nullable: true,
-  })
+  @ManyToMany(() => UserModel, (user) => user.likedMatches)
   likedUsers: UserModel[];
 }

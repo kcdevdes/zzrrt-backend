@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Req,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   AccessTokenGuard,
@@ -19,6 +12,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { GoogleGuard } from './guards/google.guard';
+import { User } from '../users/decorator/user.decorator';
 
 @Controller('auth')
 @ApiTags('Authorization API')
@@ -66,12 +60,8 @@ export class AuthController {
   @ApiOkResponse({
     description: 'returns User object',
   })
-  async getLoginResult(@Req() req) {
-    if (!req.user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    return req.user as UserModel;
+  async getLoginResult(@User() user: UserModel) {
+    return user;
   }
 
   @Post('token/access')
@@ -88,7 +78,8 @@ export class AuthController {
     const newToken = this.authService.rotateToken(req['token'], false);
 
     return {
-      accessToken: newToken,
+      access_token: newToken,
+      refresh_token: null,
     };
   }
 
@@ -106,7 +97,8 @@ export class AuthController {
     const newToken = this.authService.rotateToken(req['token'], true);
 
     return {
-      refreshToken: newToken,
+      access_token: null,
+      refresh_token: newToken,
     };
   }
 }

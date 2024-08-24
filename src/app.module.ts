@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MatchesModule } from './matches/matches.module';
 import { CommentsModule } from './comments/comments.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CommentsModule } from './comments/comments.module';
     UsersModule,
     MatchesModule,
     CommentsModule,
+    ImagesModule,
   ],
   controllers: [],
   providers: [

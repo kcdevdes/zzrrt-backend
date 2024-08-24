@@ -32,6 +32,13 @@ export class MatchesService {
     private readonly matchOptionsRepository: Repository<MatchOptionModel>,
   ) {}
 
+  /**
+   * Creates a new match with the provided options
+   * If the transaction is failed, it will be rolled back
+   * @param creator
+   * @param dto
+   * @param qr
+   */
   async createMatch(creator: UserModel, dto: CreateMatchDto, qr?: QueryRunner) {
     // DB Transaction Repositories
     const matchOptionsRepository = qr
@@ -65,6 +72,10 @@ export class MatchesService {
     return await matchesRepository.save(savedMatch);
   }
 
+  /**
+   * Finds all matches
+   * TODO: Implement pagination
+   */
   async findAllMatches() {
     try {
       return await this.matchesRepository.find({
@@ -89,6 +100,14 @@ export class MatchesService {
     return existingMatch;
   }
 
+  /**
+   * Finds all match options of a match
+   * If the transaction is failed, it will be rolled back
+   * @param user
+   * @param matchId
+   * @param dto
+   * @param qr
+   */
   async postMatchHistory(
     user: UserModel,
     matchId: string,
@@ -150,6 +169,10 @@ export class MatchesService {
     return savedHistory;
   }
 
+  /**
+   * Finds all match histories of a match
+   * @param matchId
+   */
   async findMatchHistoryById(matchId: string) {
     const existingHistories = await this.matchHistoriesRepository.find({
       where: { match: { id: matchId } },
@@ -205,8 +228,11 @@ export class MatchesService {
     return true;
   }
 
-  async postOptions() {}
-
+  /**
+   * Finds all comments of a match
+   * TODO: Implement pagination
+   * @param id
+   */
   async findCommentsOfMatchById(id: string) {
     const match = await this.matchesRepository.findOne({
       where: { id },
@@ -220,6 +246,12 @@ export class MatchesService {
     return match.comments;
   }
 
+  /**
+   * Likes the match
+   * ONLY if the user has not liked the match before
+   * @param user
+   * @param id
+   */
   async likeMatch(user: UserModel, id: string) {
     const match = await this.matchesRepository.findOne({
       where: { id },
@@ -251,6 +283,12 @@ export class MatchesService {
     return true;
   }
 
+  /**
+   * Removes the user's like from the match
+   * ONLY if the user has already liked the match
+   * @param user
+   * @param id
+   */
   async unlikeMatch(user: UserModel, id: string) {
     const match = await this.matchesRepository.findOne({
       where: { id },
@@ -282,7 +320,10 @@ export class MatchesService {
   }
 
   // AI 미쳤네... 이걸 다 만들어 주네 ㅋㅋㅋㅋㅋㅋㅋ
-  // Searches for matches based on the provided query and fields
+  /**
+   * Searches matches by the given query and fields
+   * @param searchDto
+   */
   async searchMatches(searchDto: SearchMatchesDto): Promise<MatchModel[]> {
     const { query, fields } = searchDto;
 
@@ -334,6 +375,10 @@ export class MatchesService {
     }
   }
 
+  /**
+   * Returns the number of likes of a match
+   * @param matchId
+   */
   async getMatchLikeCounterById(matchId: string) {
     const match = await this.matchesRepository.findOne({
       where: { id: matchId },

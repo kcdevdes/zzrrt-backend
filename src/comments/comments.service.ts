@@ -15,6 +15,10 @@ export class CommentsService {
     private readonly matchesService: MatchesService,
   ) {}
 
+  /**
+   * Get all comments of a match by matchId
+   * @param matchId
+   */
   async getAllCommentsOfMatchById(matchId: string) {
     return this.matchesService.findCommentsOfMatchById(matchId);
   }

@@ -20,6 +20,10 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Logs in the user and returns the access token and refresh token.
+   * @param user
+   */
   async login(user) {
     if (!user) {
       throw new UnauthorizedException('No User Found in Request');
@@ -60,9 +64,16 @@ export class AuthService {
     };
   }
 
+  /**
+   * Issues a new token when the user requests a new one.
+   * Token type is determined by the isRefreshToken parameter.
+   * @param email
+   * @param _id
+   * @param isRefreshToken
+   */
   signToken(email: string, _id: string, isRefreshToken: boolean) {
     /**
-     * email, sub, type을 무조건 포함.
+     * email, sub, type must be included in the payload
      */
     const payload = {
       sub: _id,
@@ -76,6 +87,11 @@ export class AuthService {
     });
   }
 
+  /**
+   * Extracts the token from the header.
+   * @param header
+   * @param isBearer
+   */
   extractTokenFromHeader(header: string, isBearer: boolean) {
     const splitTokens = header.split(' ');
 
@@ -94,6 +110,10 @@ export class AuthService {
     return splitTokens[1];
   }
 
+  /**
+   * @Deprecated Use verifyToken + extractTokenFromHeader instead
+   * @param token
+   */
   decodeBasicToken(token: string) {
     const decoded = Buffer.from(token, 'base64').toString('utf8');
     const split = decoded.split(':');
@@ -110,6 +130,10 @@ export class AuthService {
     };
   }
 
+  /**
+   * Verifies the token and returns the decoded payload.
+   * @param token
+   */
   verifyToken(token: string) {
     return this.jwtService.verify(token, {
       secret: this.configService.get<string>('JWT_SECRET'),

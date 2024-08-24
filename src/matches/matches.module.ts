@@ -22,5 +22,6 @@ import { MatchChoiceModel } from './entity/match-choices.entity';
   ],
   providers: [MatchesService],
   controllers: [MatchesController],
+  exports: [MatchesService],
 })
 export class MatchesModule {}

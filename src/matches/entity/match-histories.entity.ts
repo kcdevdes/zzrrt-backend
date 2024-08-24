@@ -6,11 +6,16 @@ import { MatchChoiceModel } from './match-choices.entity';
 
 @Entity()
 export class MatchHistoryModel extends BaseModel {
-  @ManyToOne(() => MatchModel, (match) => match.histories)
+  @ManyToOne(() => MatchModel, (match) => match.histories, {
+    onDelete: 'CASCADE',
+  })
   match: MatchModel;
 
-  @ManyToOne(() => UserModel, (user) => user.myHistories, { nullable: true })
-  creator: UserModel;
+  @ManyToOne(() => UserModel, (user) => user.myHistories, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  player: UserModel;
 
   @OneToMany(() => MatchChoiceModel, (choice) => choice.matchHistory, {
     nullable: true,

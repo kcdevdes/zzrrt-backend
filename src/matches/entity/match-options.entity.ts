@@ -5,14 +5,17 @@ import { IsOptional, IsString, IsUrl } from 'class-validator';
 
 @Entity()
 export class MatchOptionModel extends BaseModel {
-  @ManyToOne(() => MatchModel, (match) => match.options)
+  @ManyToOne(() => MatchModel, (match) => match.options, {
+    onDelete: 'CASCADE',
+  })
   match: string;
 
   @IsString()
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
   @IsString()
+  @IsOptional()
   @Column({ nullable: true })
   description: string;
 

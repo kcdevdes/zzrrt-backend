@@ -18,16 +18,18 @@ export class MatchChoiceModel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => MatchHistoryModel, (history) => history.choices)
+  @ManyToOne(() => MatchHistoryModel, (history) => history.choices, {
+    onDelete: 'CASCADE',
+  })
   matchHistory: MatchHistoryModel;
 
   @CreateDateColumn()
   createdAt: Date; // playedAt
 
-  @ManyToMany(() => MatchOptionModel, { eager: true })
+  @ManyToMany(() => MatchOptionModel, { eager: true, onDelete: 'CASCADE' })
   @JoinTable()
   allOptions: MatchOptionModel[];
 
-  @ManyToOne(() => MatchOptionModel, { eager: true })
+  @ManyToOne(() => MatchOptionModel, { eager: true, onDelete: 'CASCADE' })
   selectedOption: MatchOptionModel;
 }

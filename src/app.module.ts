@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MatchesModule } from './matches/matches.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MatchesModule } from './matches/matches.module';
     AuthModule,
     UsersModule,
     MatchesModule,
+    CommentsModule,
   ],
   controllers: [],
   providers: [

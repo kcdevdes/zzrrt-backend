@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MatchesModule } from './matches/matches.module';
 import { CommentsModule } from './comments/comments.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -23,12 +24,15 @@ import { CommentsModule } from './comments/comments.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DEFAULT_DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      // if in development, synchronize the database
+      // otherwise, set to false
+      synchronize: process.env.NODE_ENV === 'development',
     }),
     AuthModule,
     UsersModule,
     MatchesModule,
     CommentsModule,
+    ImagesModule,
   ],
   controllers: [],
   providers: [
